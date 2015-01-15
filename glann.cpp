@@ -6,8 +6,8 @@ GLANN::GLANN(unsigned int renderPasses, Scene *renderScene,
       : QGLWidget(parent, shareWidget)
 {
     QScreen *screen = QApplication::screens().at(0);
-    int width = screen->size().width();
-    int height = screen->size().height();
+    int width = 512;//screen->size().width();
+    int height = 512;//screen->size().height();
 
     //qDebug() << width << height << "------------------ WIDTH , HEIGHT";
 
@@ -19,10 +19,11 @@ GLANN::GLANN(unsigned int renderPasses, Scene *renderScene,
     qsrand((uint)QTime::currentTime().msec());
 
     Scene *tmpScene = (new SceneLoader("demoScene"))->getScene();
-    SceneImage = tmpScene->getSceneImage();
+    SceneImageParticles = tmpScene->getSceneImageParticles();
+    SceneImageLines = tmpScene->getSceneImageLines();
 
-    this->TexWidth = SceneImage->width();
-    this->TexHeight = SceneImage->height();
+    this->TexWidth = SceneImageParticles.width();
+    this->TexHeight = SceneImageParticles.height();
 
     randTex = new Playground(TexWidth,TexHeight);
 }
@@ -152,7 +153,7 @@ void GLANN::render(){
          //glEnable(GL_TEXTURE_2D);
 
          glActiveTexture(GL_TEXTURE0);
-         glBindTexture(GL_TEXTURE_2D, pixelsScene);
+         glBindTexture(GL_TEXTURE_2D, pixelsSceneParticels);
 
          glActiveTexture(GL_TEXTURE1);
          glBindTexture(GL_TEXTURE_2D, randTexPixels);
@@ -165,7 +166,7 @@ void GLANN::render(){
          fbo->release();
 
 
-     pixelsScene = fbo->texture();
+     pixelsSceneParticels = fbo->texture();
 
 
      //Set Program to screen frendering
@@ -175,7 +176,10 @@ void GLANN::render(){
      //Render To Screen
      //glEnable(GL_TEXTURE_2D);
      glActiveTexture(GL_TEXTURE0);
-     glBindTexture(GL_TEXTURE_2D, pixelsScene);
+     glBindTexture(GL_TEXTURE_2D, pixelsSceneParticels);
+
+     glActiveTexture(GL_TEXTURE2);
+     glBindTexture(GL_TEXTURE_2D, pixelsSceneLines);
 
      // Draw quad geometry using indices from VBO 1
      glDrawElements(GL_TRIANGLE_STRIP, 5, GL_UNSIGNED_SHORT, 0);
@@ -199,7 +203,9 @@ void GLANN::initTextures(){
     //Bind random Order Array
     randTexPixels = QGLWidget::bindTexture(*randTex);
 
-    pixelsScene = QGLWidget::bindTexture(*SceneImage);
+    //Bind Scene
+    pixelsSceneParticels = QGLWidget::bindTexture(SceneImageParticles);
+    pixelsSceneLines = QGLWidget::bindTexture(SceneImageParticles);
 
 
     // Poor filtering.
@@ -231,14 +237,24 @@ void GLANN::initShader(){
     // Use texture unit 0
     program.setUniformValue("Particles",0);
 
-    // Use texture unit 2
+    // Use texture unit 1
     program.setUniformValue("randTex",1);
 
+    // Use texture unit 1
+    program.setUniformValue("Lines",2);
+
     //width
-    program.setUniformValue("numParticles", SceneImage->width());
+    program.setUniformValue("numParticles", SceneImageParticles.width());
 
     //height
-    program.setUniformValue("numParameters", PointLight::getSize());
+    program.setUniformValue("numParametersP", PointLight::getSize());
+
+
+    //width
+    program.setUniformValue("numLines", SceneImageLines.width());
+
+    //height
+    program.setUniformValue("numParametersL", LineObject::getSize());
 
 }
 

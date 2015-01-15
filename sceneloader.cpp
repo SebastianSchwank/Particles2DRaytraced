@@ -8,13 +8,19 @@ SceneLoader::SceneLoader(QString filename)
     if(filename == "demoScene"){
         mScene = new Scene();
 
-        for(int i = 0; i < 150; i++){
+        for(int i = 0; i < 100; i++){
             PointLight l(1.0f*qrand()/RAND_MAX,1.0f*qrand()/RAND_MAX,
                          1.0f*qrand()/RAND_MAX,
                           qRgba(255.0f*qrand()/RAND_MAX,
                                 255.0f*qrand()/RAND_MAX,
                                 255.0f*qrand()/RAND_MAX,
                                 255));
+            mScene->addObject(l);
+         }
+
+        for(int i = 0; i < 5; i++){
+            LineObject l(1.0f*qrand()/RAND_MAX,1.0f*qrand()/RAND_MAX,
+                         1.0f*qrand()/RAND_MAX,1.0f*qrand()/RAND_MAX);
             mScene->addObject(l);
          }
 

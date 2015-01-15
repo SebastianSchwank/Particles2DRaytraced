@@ -16,7 +16,8 @@ public:
     Scene();
     void addObject(LineObject newObject);
     void addObject(PointLight newObject);
-    QImage *getSceneImage();
+    QImage getSceneImageLines();
+    QImage getSceneImageParticles();
 
 private:
     QVector<PointLight> mSceneP;

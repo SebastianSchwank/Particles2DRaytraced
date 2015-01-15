@@ -68,15 +68,16 @@ private:
 
 
     Scene *mScene;
-    QImage *SceneImage;
+    QImage SceneImageParticles;
+    QImage SceneImageLines;
     QImage *randTex;
 
     QGLShaderProgram program;
     QOpenGLFramebufferObject *fbo;
 
     GLuint randTexPixels;
-    GLuint pixelsRenderedImage;
-    GLuint pixelsScene;
+    GLuint pixelsSceneLines;
+    GLuint pixelsSceneParticels;
     unsigned char *renderedImageUCHAR;
 
     //unsigned int texSize = 512;
