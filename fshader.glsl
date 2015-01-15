@@ -53,7 +53,7 @@ void main()
             float brightness = unpack(texelFetch(Particles,vec2(float(i),1.0),ivec2(numParticles,numParameters)));
             vec4  color = texelFetch(Particles,vec2(float(i),0.0),ivec2(numParticles,numParameters));
 
-            brightness = brightness * 0.05*(1.0/distance(vec2(xP,yP),v_texcoord));
+            brightness = brightness * 0.005*(1.0/distance(vec2(xP,yP),v_texcoord));
             renderedImagePixel += color * brightness;
         }
     }
