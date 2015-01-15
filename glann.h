@@ -70,6 +70,7 @@ private:
     Scene *mScene;
     QImage SceneImageParticles;
     QImage SceneImageLines;
+    QImage *emptyTex;
     QImage *randTex;
 
     QGLShaderProgram program;
@@ -78,6 +79,7 @@ private:
     GLuint randTexPixels;
     GLuint pixelsSceneLines;
     GLuint pixelsSceneParticels;
+    GLuint pixelsRenderedImage;
     unsigned char *renderedImageUCHAR;
 
     //unsigned int texSize = 512;
@@ -86,6 +88,7 @@ private:
     unsigned int numParam;
 
     unsigned int mNumFrames = 0;
+    unsigned int samples = 4;
 
     GLuint vboId0;
     GLuint vboId1;

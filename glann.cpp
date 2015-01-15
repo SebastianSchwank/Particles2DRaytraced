@@ -25,7 +25,9 @@ GLANN::GLANN(unsigned int renderPasses, Scene *renderScene,
     this->TexWidth = SceneImageParticles.width();
     this->TexHeight = SceneImageParticles.height();
 
-    randTex = new Playground(TexWidth,TexHeight);
+    randTex = new Playground(width,height);
+
+    emptyTex = new QImage(width,height,QImage::Format_ARGB32);
 }
 
 void GLANN::initializeGL(){
@@ -72,7 +74,7 @@ void GLANN::initializeGL(){
 }
 
 bool GLANN::initFbo(){
-    fbo = new QOpenGLFramebufferObject(TexWidth, TexHeight);
+    fbo = new QOpenGLFramebufferObject(width, height);
     return true;
 }
 
@@ -90,6 +92,17 @@ void GLANN::mousePressEvent(QMouseEvent* event){
 
 void GLANN::paintGL(){
 
+    Scene *tmpScene = (new SceneLoader("demoScene"))->getScene();
+    SceneImageParticles = tmpScene->getSceneImageParticles();
+    SceneImageLines = tmpScene->getSceneImageLines();
+
+    glDeleteTextures(1,&pixelsSceneLines);
+    glDeleteTextures(1,&pixelsSceneLines);
+
+    //Bind Scene
+    pixelsSceneParticels = QGLWidget::bindTexture(SceneImageParticles);
+    pixelsSceneLines = QGLWidget::bindTexture(SceneImageParticles);
+
     render();
 
     //increment number of rendered frames
@@ -98,59 +111,39 @@ void GLANN::paintGL(){
 
 void GLANN::render(){
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    // Render to our framebuffer
+    fbo->bind();
+    glViewport(0,0,width,height);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    //Set program to fbo render mode
+    program.setUniformValue("shaderMode",1);
+
+    // Tell OpenGL which VBOs to use
+    glBindBuffer(GL_ARRAY_BUFFER, vboId0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboId1);
+
+    // Offset for position
+    int offset = 0;
+
+    // Tell OpenGL programmable pipeline how to locate vertex position data
+    int vertexLocation = program.attributeLocation("a_position");
+    program.enableAttributeArray(vertexLocation);
+    glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (const void *)offset);
+
+    // Offset for texture coordinate
+    offset += sizeof(QVector3D);
+
+    // Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
+    int texcoordLocation = program.attributeLocation("a_texcoord");
+    program.enableAttributeArray(texcoordLocation);
+    glVertexAttribPointer(texcoordLocation, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (const void *)offset);
 
         // Set random seed
         program.setUniformValue("seedX", ((float)qrand()/RAND_MAX));
         program.setUniformValue("seedY", ((float)qrand()/RAND_MAX));
-
-        //Set number of alredy rendered passes
-        //program.setUniformValue("numRenderPass",mRenderPasses);
-
-        //Set program to fbo render mode
-        program.setUniformValue("shaderMode",1);
-
-        //Set program' to fbo render mode's cycle mode
-        //if(mRenderPasses % 2 == 0) program.setUniformValue("sieveCycle",true);
-        //else program.setUniformValue("sieveCycle",false);
-
-        //Bind last rendered Image
-        //pixelsRenderedImage = bindTexture(*renderedImage);
-
-        //Load Identity
-        //glLoadIdentity();
-
-        //Move to rendering point
-        //glTranslatef( -1.0, -1.0, 0.0f );
-
-        // Draw geometry
-        // Tell OpenGL which VBOs to use
-
-         // Render to our framebuffer
-         fbo->bind();
-         glViewport(0,0,TexWidth,TexHeight);
-
-         // Tell OpenGL which VBOs to use
-         glBindBuffer(GL_ARRAY_BUFFER, vboId0);
-         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboId1);
-
-         // Offset for position
-         int offset = 0;
-
-         // Tell OpenGL programmable pipeline how to locate vertex position data
-         int vertexLocation = program.attributeLocation("a_position");
-         program.enableAttributeArray(vertexLocation);
-         glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (const void *)offset);
-
-         // Offset for texture coordinate
-         offset += sizeof(QVector3D);
-
-         // Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
-         int texcoordLocation = program.attributeLocation("a_texcoord");
-         program.enableAttributeArray(texcoordLocation);
-         glVertexAttribPointer(texcoordLocation, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (const void *)offset);
-
-         //glEnable(GL_TEXTURE_2D);
 
          glActiveTexture(GL_TEXTURE0);
          glBindTexture(GL_TEXTURE_2D, pixelsSceneParticels);
@@ -158,28 +151,40 @@ void GLANN::render(){
          glActiveTexture(GL_TEXTURE1);
          glBindTexture(GL_TEXTURE_2D, randTexPixels);
 
+         glActiveTexture(GL_TEXTURE2);
+         glBindTexture(GL_TEXTURE_2D, pixelsSceneLines);
+
+         glActiveTexture(GL_TEXTURE3);
+         glBindTexture(GL_TEXTURE_2D, pixelsRenderedImage);
+
          // Draw cube geometry using indices from VBO 1
          glDrawElements(GL_TRIANGLE_STRIP, 5, GL_UNSIGNED_SHORT, 0);
 
          //qDebug() << glGetError() << "Line 183";
 
-         fbo->release();
+     fbo->release();
 
+     glDeleteTextures(1,&pixelsRenderedImage);
+     pixelsRenderedImage = fbo->takeTexture();
 
-     pixelsSceneParticels = fbo->texture();
-
+     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
      //Set Program to screen frendering
      program.setUniformValue("shaderMode",0);
      //Set Viewport back to default
      glViewport(0,0,width,height);
      //Render To Screen
-     //glEnable(GL_TEXTURE_2D);
      glActiveTexture(GL_TEXTURE0);
      glBindTexture(GL_TEXTURE_2D, pixelsSceneParticels);
 
+     glActiveTexture(GL_TEXTURE1);
+     glBindTexture(GL_TEXTURE_2D, randTexPixels);
+
      glActiveTexture(GL_TEXTURE2);
      glBindTexture(GL_TEXTURE_2D, pixelsSceneLines);
+
+     glActiveTexture(GL_TEXTURE3);
+     glBindTexture(GL_TEXTURE_2D, pixelsRenderedImage);
 
      // Draw quad geometry using indices from VBO 1
      glDrawElements(GL_TRIANGLE_STRIP, 5, GL_UNSIGNED_SHORT, 0);
@@ -207,6 +212,8 @@ void GLANN::initTextures(){
     pixelsSceneParticels = QGLWidget::bindTexture(SceneImageParticles);
     pixelsSceneLines = QGLWidget::bindTexture(SceneImageParticles);
 
+    emptyTex->fill(qRgba(0,0,0,0));
+    pixelsRenderedImage = bindTexture(*emptyTex);
 
     // Poor filtering.
     //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -243,12 +250,23 @@ void GLANN::initShader(){
     // Use texture unit 1
     program.setUniformValue("Lines",2);
 
+    // Use texture unit 1
+    program.setUniformValue("renderedImage",3);
+
+    //width
+    program.setUniformValue("width", width);
+
+    //height
+    program.setUniformValue("height", height);
+
+    //height
+    program.setUniformValue("samples", samples);
+
     //width
     program.setUniformValue("numParticles", SceneImageParticles.width());
 
     //height
     program.setUniformValue("numParametersP", PointLight::getSize());
-
 
     //width
     program.setUniformValue("numLines", SceneImageLines.width());

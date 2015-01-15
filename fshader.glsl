@@ -20,7 +20,16 @@ uniform sampler2D randTex;
 uniform float seedX;
 uniform float seedY;
 
-uniform int slope;
+uniform sampler2D renderedImage;
+
+//NIY
+uniform float mouseX;
+uniform float mouseY;
+
+uniform int width;
+uniform int height;
+
+uniform int samples;
 
 const float pi = 3.14159265359;
 
@@ -71,9 +80,13 @@ float clampFl(float value){
 
 void main()
 {
-    vec4 renderedImagePixel = vec4(0.0,0.0,0.0,0.0);
+    vec4 renderedImagePixel = texture2D(renderedImage,v_texcoord);
 
-    if(shaderMode == 0){
+    if(shaderMode == 1){
+        vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
+
+        vec4 randVal = texture2D(randTex,vec2(v_texcoord.x + seedX,v_texcoord.y + seedY));
+        vec2 pos = vec2(v_texcoord.x + randVal.x/float(width/8),v_texcoord.y + randVal.y/float(height/8)) ;
 
         for(int i = 0; i < numParticles; i++){
             float xP = unpack(texelFetch(Particles,vec2(float(i),3.0),ivec2(numParticles,numParametersP)));
@@ -90,7 +103,7 @@ void main()
                 vec2 b = vec2(x2,y2);
 
                 vec2 r1 = vec2(xP,yP);
-                vec2 r2 = v_texcoord;
+                vec2 r2 = pos;
 
                 if(lineSegmentIntersection(a,b,r1,r2)){
                     brightness = 0.0;
@@ -99,26 +112,12 @@ void main()
             }
 
 
-            brightness = brightness * 0.005*(1.0/distance(vec2(xP,yP),v_texcoord));
-            renderedImagePixel += color * brightness;
+            brightness = brightness * 0.055*(1.0/distance(vec2(xP,yP),pos));
+            pixelColor += (color * brightness);
         }
+
+        renderedImagePixel = ( pixelColor + renderedImagePixel * 2.0 ) / samples;
     }
-
-    if(shaderMode == 1){
-            vec4 Param = texture2D(Particles,v_texcoord);
-
-            vec2 randCoord = vec2(v_texcoord.x+seedX,v_texcoord.y+seedY);
-            vec4 randomParam = texture2D(randTex,randCoord);
-
-            renderedImagePixel = Param + (randomParam-vec4(0.5,0.5,0.5,0.5))/100.0;
-    }
-
-    if(shaderMode == 2){
-
-    }
-
-
-    //renderedImagePixel = texture2D(Particles,v_texcoord);
 
 
     gl_FragColor = renderedImagePixel;
