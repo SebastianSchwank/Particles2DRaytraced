@@ -116,7 +116,7 @@ void main()
             pixelColor += (color * brightness);
         }
 
-        renderedImagePixel = ( pixelColor + renderedImagePixel * 2.0 ) / samples;
+        renderedImagePixel = ( pixelColor + renderedImagePixel*samples) / (samples+1);
     }
 
 
