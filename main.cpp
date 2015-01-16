@@ -43,7 +43,7 @@
 #include <QLabel>
 #include <QGLFramebufferObject>
 
-#include <sceneloader.h>
+#include "sceneloader.h"
 
 #ifndef QT_NO_OPENGL
 #include "mainwidget.h"

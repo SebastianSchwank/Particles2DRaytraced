@@ -86,7 +86,7 @@ void main()
         vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
 
         vec4 randVal = texture2D(randTex,vec2(v_texcoord.x + seedX,v_texcoord.y + seedY));
-        vec2 pos = vec2(v_texcoord.x + randVal.x/float(width/8),v_texcoord.y + randVal.y/float(height/8)) ;
+        vec2 pos = vec2(v_texcoord.x + randVal.x/float(width/4),v_texcoord.y + randVal.y/float(height/4)) ;
 
         for(int i = 0; i < numParticles; i++){
             float xP = unpack(texelFetch(Particles,vec2(float(i),3.0),ivec2(numParticles,numParametersP)));
@@ -112,7 +112,7 @@ void main()
             }
 
 
-            brightness = brightness * 0.055*(1.0/distance(vec2(xP,yP),pos));
+            brightness = brightness * 0.055*(1.0/distance(vec2(xP,yP),pos))*(1.0+sin(distance(vec2(xP,yP),pos)*300));
             pixelColor += (color * brightness);
         }
 

@@ -19,9 +19,13 @@ public:
     QImage getSceneImageLines();
     QImage getSceneImageParticles();
 
-private:
+    unsigned int getClickedLight(float x, float y, float r);
+    void moveLight(float x, float y, unsigned int i);
+
     QVector<PointLight> mSceneP;
     QVector<LineObject> mSceneL;
+
+private:
     QImage *SceneImage;
 };
 

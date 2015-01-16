@@ -8,7 +8,7 @@ SceneLoader::SceneLoader(QString filename)
     if(filename == "demoScene"){
         mScene = new Scene();
 
-        for(int i = 0; i < 25; i++){
+        for(int i = 0; i < 10; i++){
             PointLight l(1.0f*qrand()/RAND_MAX,1.0f*qrand()/RAND_MAX,
                          1.0f*qrand()/RAND_MAX,
                           qRgba(255.0f*qrand()/RAND_MAX,
@@ -26,6 +26,7 @@ SceneLoader::SceneLoader(QString filename)
 
     }
 }
+
 
 
 Scene* SceneLoader::getScene(){

@@ -90,6 +90,8 @@ private:
     unsigned int mNumFrames = 0;
     unsigned int samples = 4;
 
+    unsigned int mLightIndexClicked;
+
     GLuint vboId0;
     GLuint vboId1;
     struct VertexData

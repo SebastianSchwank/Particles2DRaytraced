@@ -18,9 +18,9 @@ GLANN::GLANN(unsigned int renderPasses, Scene *renderScene,
 
     qsrand((uint)QTime::currentTime().msec());
 
-    Scene *tmpScene = (new SceneLoader("demoScene"))->getScene();
-    SceneImageParticles = tmpScene->getSceneImageParticles();
-    SceneImageLines = tmpScene->getSceneImageLines();
+    mScene = (new SceneLoader("demoScene"))->getScene();
+    SceneImageParticles = mScene->getSceneImageParticles();
+    SceneImageLines = mScene->getSceneImageLines();
 
     this->TexWidth = SceneImageParticles.width();
     this->TexHeight = SceneImageParticles.height();
@@ -83,22 +83,25 @@ void GLANN::resizeGL(int w, int h){
 }
 
 void GLANN::mouseMoveEvent(QMouseEvent* event){
+    if(event->buttons() == Qt::LeftButton){
 
+        SceneImageParticles = mScene->getSceneImageParticles();
+        SceneImageLines = mScene->getSceneImageLines();
+
+        glDeleteTextures(1,&pixelsSceneLines);
+        glDeleteTextures(1,&pixelsSceneParticels);
+
+        //Bind Scene
+        pixelsSceneParticels = QGLWidget::bindTexture(SceneImageParticles);
+        pixelsSceneLines = QGLWidget::bindTexture(SceneImageLines);
+
+        mScene->moveLight(1.0f*event->pos().x()/width,1.0f-1.0f*event->pos().y()/height,mLightIndexClicked);
+    }
 }
 
 void GLANN::mousePressEvent(QMouseEvent* event){
 
-    Scene *tmpScene = (new SceneLoader("demoScene"))->getScene();
-    SceneImageParticles = tmpScene->getSceneImageParticles();
-    SceneImageLines = tmpScene->getSceneImageLines();
-
-    glDeleteTextures(1,&pixelsSceneLines);
-    glDeleteTextures(1,&pixelsSceneParticels);
-
-    //Bind Scene
-    pixelsSceneParticels = QGLWidget::bindTexture(SceneImageParticles);
-    pixelsSceneLines = QGLWidget::bindTexture(SceneImageParticles);
-
+    mLightIndexClicked = mScene->getClickedLight(1.0f*event->pos().x()/width,1.0f-1.0f*event->pos().y()/height,0.025);
 }
 
 void GLANN::paintGL(){
@@ -212,7 +215,7 @@ void GLANN::initTextures(){
 
     //Bind Scene
     pixelsSceneParticels = QGLWidget::bindTexture(SceneImageParticles);
-    pixelsSceneLines = QGLWidget::bindTexture(SceneImageParticles);
+    pixelsSceneLines = QGLWidget::bindTexture(SceneImageLines);
 
     emptyTex->fill(qRgba(255,255,255,255));
     pixelsRenderedImage = bindTexture(*emptyTex);

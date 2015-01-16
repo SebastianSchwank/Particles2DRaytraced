@@ -15,7 +15,6 @@ public:
     SceneLoader(QString filename);
 
     Scene *getScene();
-
 private:
     Scene* mScene = NULL;
 
