@@ -122,6 +122,8 @@ void GLANN::render(){
         fbo->bind();
         //glViewport(0,0,width,height);
 
+        //Set program to fbo render mode
+        program.setUniformValue("time",((float)((mNumFrames%32)/32.0)));
 
         //Set program to fbo render mode
         program.setUniformValue("shaderMode",1);

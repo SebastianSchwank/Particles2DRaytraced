@@ -22,9 +22,8 @@ uniform float seedY;
 
 uniform sampler2D renderedImage;
 
-//NIY
-uniform float mouseX;
-uniform float mouseY;
+//Time
+uniform float time;
 
 uniform int width;
 uniform int height;
@@ -46,8 +45,8 @@ vec4 texelFetch(sampler2D tex,const vec2 coord, const ivec2 size){
     vec2 fCoord = vec2((2.0*coord.x + 1.0)/(2.0*float(size.x)),(2.0*coord.y + 1.0)/(2.0*float(size.y)));
     return texture2D(tex,fCoord);
 }
-//Calculate intersection between a Vector and a Line
-bool lineSegmentIntersection(vec2 r0, vec2 r1, vec2 a, vec2 b)
+//Calculate if there's aintersection between two Line Segments
+bool checkLineSegmentIntersection(vec2 r0, vec2 r1, vec2 a, vec2 b)
 {
     vec2 s1, s2;
     s1 = r1 - r0;
@@ -71,6 +70,45 @@ bool lineSegmentIntersection(vec2 r0, vec2 r1, vec2 a, vec2 b)
     //return vec3(0,0,-1.0); // No collision
     return false;
 }
+//Calculate the intersection between two Line Segments
+vec3 lineSegmentIntersection(vec2 r0, vec2 r1, vec2 a, vec2 b)
+{
+    vec2 s1, s2;
+    s1 = r1 - r0;
+    s2 = b - a;
+
+    highp float s, t;
+    s = (-s1.y * (r0.x - a.x) + s1.x * (r0.y - a.y)) / (-s2.x * s1.y + s1.x * s2.y);
+    t = (s2.x * (r0.y - a.y) - s2.y * (r0.x - a.x)) / (-s2.x * s1.y + s1.x * s2.y);
+
+    if ((s >= 0.0) && (s <= 1.0) && (t >= 0.0) && (t <= 1.0))
+    {
+        // Collision detected
+        // Return the point of intersection
+        float xI = r0.x + (t * s1.x);
+        float yI = r0.y + (t * s1.y);
+        float dist = sqrt((r0.x-xI)*(r0.x-xI)+(r0.y-yI)*(r0.y-yI));
+        return vec3(xI, yI, dist);
+    }
+
+    return vec3(0,0,-1.0); // No collision
+    //return false;
+}
+//Calculate reflected vector
+vec2 reflect(vec2 V,vec2 a,vec2 b){
+    vec2 N = vec2(-(b-a).y,(b-a).x);
+         N = N / sqrt((N.x*N.x)+(N.y*N.y));
+    vec2 O = V - 2.0 * dot(V,N) * N;
+    //O = 9.0*O/sqrt((O.x+O.x)+(O.y+O.y));
+    return O;
+}
+
+float solvePath(vec2 start, vec2 goal, vec4 reflectingLineSegment){
+
+
+
+    return -1.0;
+}
 
 
 float clampFl(float value){
@@ -87,6 +125,7 @@ void main()
 
         vec4 randVal = texture2D(randTex,vec2(v_texcoord.x + seedX,v_texcoord.y + seedY));
         vec2 pos = vec2(v_texcoord.x + randVal.x/float(width/4),v_texcoord.y + randVal.y/float(height/4)) ;
+        float dist = 0;
 
         for(int i = 0; i < numParticles; i++){
             float xP = unpack(texelFetch(Particles,vec2(float(i),3.0),ivec2(numParticles,numParametersP)));
@@ -105,14 +144,14 @@ void main()
                 vec2 r1 = vec2(xP,yP);
                 vec2 r2 = pos;
 
-                if(lineSegmentIntersection(a,b,r1,r2)){
+                if(checkLineSegmentIntersection(a,b,r1,r2)){
                     brightness = 0.0;
                     j = numLines;
                 }
             }
 
-
-            brightness = brightness * 0.055*(1.0/distance(vec2(xP,yP),pos))*(1.0+sin(distance(vec2(xP,yP),pos)*300));
+            dist = sqrt((xP-pos.x)*(xP-pos.x)+(yP-pos.y)*(yP-pos.y));
+            brightness = brightness * 0.055*(1.0/dist)*(1.0+sin(dist*300-2*time*pi));
             pixelColor += (color * brightness);
         }
 
