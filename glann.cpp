@@ -98,13 +98,10 @@ void GLANN::mouseMoveEvent(QMouseEvent* event){
 
         mScene->moveLight(1.0f*event->pos().x()/width,1.0f-1.0f*event->pos().y()/height,mLightIndexClicked);
 */
-        mouseForce = true;
 
         flMouseX = event->pos().x();
         flMouseY = event->pos().y();
 
-    }else{
-        mouseForce = false;
     }
 
 }

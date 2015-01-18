@@ -151,7 +151,7 @@ void main()
             }
 
             dist = sqrt((xP-pos.x)*(xP-pos.x)+(yP-pos.y)*(yP-pos.y));
-            brightness = brightness * 0.055*(1.0/dist)*(1.0+sin(dist*300-2*time*pi));
+            brightness = brightness * 0.04*(1.0/dist)*(1.0+sin(dist*300-2*time*pi));
             pixelColor += (color * brightness);
         }
 
