@@ -17,6 +17,9 @@ PointLight::PointLight(float x, float y,
     mData.append(UintRgba.i_);
 
     mData.append(color);
+
+    velX = 0.0;
+    velY = 0.0;
 }
 
 unsigned int PointLight::getAttributeAsPixel(int i){

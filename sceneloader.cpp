@@ -18,7 +18,7 @@ SceneLoader::SceneLoader(QString filename)
             mScene->addObject(l);
          }
 
-        for(int i = 0; i < 1; i++){
+        for(int i = 0; i < 5; i++){
             LineObject l(1.0f*qrand()/RAND_MAX,1.0f*qrand()/RAND_MAX,
                          1.0f*qrand()/RAND_MAX,1.0f*qrand()/RAND_MAX);
             mScene->addObject(l);

@@ -83,8 +83,9 @@ void GLANN::resizeGL(int w, int h){
 }
 
 void GLANN::mouseMoveEvent(QMouseEvent* event){
-    if(event->buttons() == Qt::LeftButton){
 
+    if(event->buttons() == Qt::LeftButton){
+/*
         SceneImageParticles = mScene->getSceneImageParticles();
         SceneImageLines = mScene->getSceneImageLines();
 
@@ -96,21 +97,59 @@ void GLANN::mouseMoveEvent(QMouseEvent* event){
         pixelsSceneLines = QGLWidget::bindTexture(SceneImageLines);
 
         mScene->moveLight(1.0f*event->pos().x()/width,1.0f-1.0f*event->pos().y()/height,mLightIndexClicked);
+*/
+        mouseForce = true;
+
+        flMouseX = event->pos().x();
+        flMouseY = event->pos().y();
+
+    }else{
+        mouseForce = false;
     }
+
 }
 
 void GLANN::mousePressEvent(QMouseEvent* event){
 
-    mLightIndexClicked = mScene->getClickedLight(1.0f*event->pos().x()/width,1.0f-1.0f*event->pos().y()/height,0.025);
+    //mLightIndexClicked = mScene->getClickedLight(1.0f*event->pos().x()/width,1.0f-1.0f*event->pos().y()/height,0.025);
 }
 
 void GLANN::paintGL(){
 
 
     render();
+    calcForces();
 
     //increment number of rendered frames
     mNumFrames++;
+}
+
+void GLANN::calcForces(){
+
+    for(int i = 0; i < mScene->mSceneP.size(); i++){
+        for(int j = 0; j < mScene->mSceneP.size(); j++){
+            float dx = mScene->mSceneP[j].getPosX() - mScene->mSceneP[i].getPosX();
+            float dy = mScene->mSceneP[j].getPosY() - mScene->mSceneP[i].getPosY();
+            float d = sqrt(dx*dx+dy*dy);
+
+            mScene->mSceneP[i].velX += 0.0003 * dx  ;//1.0/d;
+            mScene->mSceneP[i].velY += 0.0003 * dy  ;//1.0/d;
+        }
+    }
+
+    for(int i = 0; i < mScene->mSceneP.size(); i++)
+    mScene->mSceneP[i].setPos(mScene->mSceneP[i].getPosX()+mScene->mSceneP[i].velX,
+                              mScene->mSceneP[i].getPosY()+mScene->mSceneP[i].velY);
+
+    SceneImageParticles = mScene->getSceneImageParticles();
+    SceneImageLines = mScene->getSceneImageLines();
+
+    glDeleteTextures(1,&pixelsSceneLines);
+    glDeleteTextures(1,&pixelsSceneParticels);
+
+    //Bind Scene
+    pixelsSceneParticels = QGLWidget::bindTexture(SceneImageParticles);
+    pixelsSceneLines = QGLWidget::bindTexture(SceneImageLines);
 }
 
 void GLANN::render(){

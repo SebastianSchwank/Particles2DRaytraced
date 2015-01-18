@@ -15,6 +15,8 @@ public:
     float getPosX();
     float getPosY();
 
+    float velX,velY;
+
 private:
     QVector<unsigned int> mData;
 };

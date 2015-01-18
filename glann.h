@@ -49,6 +49,7 @@ protected:
 
 private:
     void render();
+    void calcForces();
 
     void getFeedbackTexture();
 
@@ -91,6 +92,8 @@ private:
     unsigned int samples = 4;
 
     unsigned int mLightIndexClicked;
+    float flMouseX,flMouseY;
+    bool mouseForce;
 
     GLuint vboId0;
     GLuint vboId1;
